@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo App - QR Scanner & Payment</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a2e;
+            color: #fff;
+        }
+
+        .screen {
+            display: none;
+            padding: 20px;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        h1, h2, h3 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .notification {
+            background-color: #ff4d4d;
+            border-radius: 50%;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .section, .popular-items, .suggested-items {
+            margin: 20px 0;
+        }
+
+        .btn, .add-btn, .payment-btn, .qr-btn {
+            background: linear-gradient(90deg, #6a5af9, #8b7afa);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 15px;
+            color: #fff;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.3s ease;
+        }
+
+        .btn:hover, .add-btn:hover, .payment-btn:hover, .qr-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .item-card {
+            background-color: #2a2a4e;
+            border-radius: 15px;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+        }
+
+        img {
+            border-radius: 10px;
+        }
+
+        .scanner-overlay {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .scanner-frame {
+            border: 2px dashed #6a5af9;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .product-list, .cart-summary, .receipt-details {
+            margin: 20px 0;
+        }
+
+        .payment-options {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .payment-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #2a2a4e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .payment-btn:hover {
+            background: #6a5af9;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .qr-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Home Screen -->
+    <div id="home-screen" class="screen active">
+        <header>
+            <h1>Сайн уу, Тевсанаа!</h1>
+            <span class="notification">21</span>
+        </header>
+        <div class="section">
+            <p>Таны хэрэглэн буутээгдэхүүн байхгүй байна</p>
+            <button class="btn" onclick="navigate('load-items')">Бараа ачаалах</button>
+            <button class="btn" onclick="navigate('ready-emails')">Бэлэн имэйлс</button>
+        </div>
+        <div class="popular-items">
+            <h2>Popular Items</h2>
+            <div class="item-card">
+                <img src="https://via.placeholder.com/150?text=Mogu+Mogu+Lychee" alt="Mogu Mogu Lychee">
+                <p>Mogu Mogu Lychee - 50% OFF</p>
+            </div>
+            <div class="item-card">
+                <img src="https://via.placeholder.com/150?text=Mogu+Mogu+Mango" alt="Mogu Mogu Mango">
+                <p>Mogu Mogu Mango - 50% OFF</p>
+            </div>
+        </div>
+        <div class="suggested-items">
+            <h2>Suggested Items</h2>
+            <div class="item-card">
+                <img src="https://via.placeholder.com/100?text=Sparkling+Water" alt="Sparkling Water">
+                <p>Sparkling Water - Grape Flavor (2200)</p>
+            </div>
+            <div class="item-card">
+                <img src="https://via.placeholder.com/100?text=Tea-Lipton" alt="Tea-Lipton">
+                <p>Tea-Lipton 500 ml / green tea (3150)</p>
+            </div>
+            <div class="item-card">
+                <img src="https://via.placeholder.com/100?text=Mogu+Mogu+Mango" alt="Mogu Mogu Mango">
+                <p>Mogu Mogu Mango 320ml (4250)</p>
+            </div>
+        </div>
+        <button class="qr-btn" onclick="navigate('qr-scanner')">Scan QR Code</button>
+    </div>
+
+    <!-- QR Scanner Screen -->
+    <div id="qr-scanner" class="screen">
+        <div class="scanner-overlay">
+            <h2>Scan QR Code</h2>
+            <div class="scanner-frame">
+                <img src="https://via.placeholder.com/200?text=QR+Code" alt="QR Code Placeholder">
+            </div>
+            <button class="btn" onclick="navigate('product-selection')">Simulate Scan</button>
+        </div>
+    </div>
+
+    <!-- Product Selection Screen -->
+    <div id="product-selection" class="screen">
+        <header>
+            <button class="back-btn" onclick="navigate('qr-scanner')">←</button>
+            <h2>Available Products</h2>
+        </header>
+        <div class="product-list">
+            <div class="item-card">
+                <img src="https://via.placeholder.com/100?text=Mogu+Mogu+Lychee" alt="Mogu Mogu Lychee">
+                <p>Mogu Mogu Lychee (2200)</p>
+                <button class="add-btn" onclick="addToCart('Mogu Mogu Lychee', 2200)">Add to Cart</button>
+            </div>
+            <div class="item-card">
+                <img src="https://via.placeholder.com/100?text=Tea-Lipton" alt="Tea-Lipton">
+                <p>Tea-Lipton 500 ml (3150)</p>
+                <button class="add-btn" onclick="addToCart('Tea-Lipton 500 ml', 3150)">Add to Cart</button>
+            </div>
+        </div>
+        <button class="btn" onclick="navigate('payment')">Proceed to Payment</button>
+    </div>
+
+    <!-- Payment Screen -->
+    <div id="payment" class="screen">
+        <header>
+            <button class="back-btn" onclick="navigate('product-selection')">←</button>
+            <h2>Payment</h2>
+        </header>
+        <div class="cart-summary">
+            <h3>Cart Summary</h3>
+            <ul id="cart-items"></ul>
+            <p>Total: <span id="cart-total">0</span></p>
+        </div>
+        <div class="payment-options">
+            <button class="payment-btn">Bank Card</button>
+            <button class="payment-btn">QPay</button>
+            <button class="payment-btn">HiPay</button>
+            <button class="payment-btn">MonPay</button>
+        </div>
+        <button class="btn" onclick="navigate('receipt')">Pay Now</button>
+    </div>
+
+    <!-- Receipt Screen -->
+    <div id="receipt" class="screen">
+        <header>
+            <button class="back-btn" onclick="navigate('home-screen')">←</button>
+            <h2>eBarimt Receipt</h2>
+        </header>
+        <div class="receipt-details">
+            <p>Transaction ID: #123456</p>
+            <ul id="receipt-items"></ul>
+            <p>Total: <span id="receipt-total">0</span></p>
+            <p>Payment Method: Bank Card</p>
+            <p>Date: May 10, 2025</p>
+        </div>
+        <button class="btn">Download PDF</button>
+        <button class="btn">Share</button>
+    </div>
+
+    <script>
+        let cart = [];
+        let total = 0;
+
+        function navigate(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+
+            if (screenId === 'payment') {
+                updateCartSummary();
+            } else if (screenId === 'receipt') {
+                updateReceipt();
+            }
+        }
+
+        function addToCart(itemName, price) {
+            cart.push({ name: itemName, price: price });
+            total += price;
+            alert(`${itemName} added to cart!`);
+        }
+
+        function updateCartSummary() {
+            const cartItems = document.getElementById('cart-items');
+            cartItems.innerHTML = '';
+            cart.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = `${item.name} - ${item.price}`;
+                cartItems.appendChild(li);
+            });
+            document.getElementById('cart-total').textContent = total;
+        }
+
+        function updateReceipt() {
+            const receiptItems = document.getElementById('receipt-items');
+            receiptItems.innerHTML = '';
+            cart.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = `${item.name} - ${item.price}`;
+                receiptItems.appendChild(li);
+            });
+            document.getElementById('receipt-total').textContent = total;
+        }
+    </script>
+</body>
+</html>
